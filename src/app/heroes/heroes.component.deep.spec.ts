@@ -1,4 +1,4 @@
-import { Component, Input, NO_ERRORS_SCHEMA } from "@angular/core";
+import { Component, CUSTOM_ELEMENTS_SCHEMA, Input, NO_ERRORS_SCHEMA } from "@angular/core";
 import { ComponentFixture, TestBed } from "@angular/core/testing"
 import { By } from "@angular/platform-browser";
 import { of } from "rxjs";
@@ -19,7 +19,11 @@ describe('HeroesComponent (deep test)', () => {
       {id: 3, name: 'SuperDude', strength: 55},
     ];
 
-    mockHeroService = jasmine.createSpyObj(['getHeroes', 'addHero', 'deleteHero']);
+    mockHeroService = {
+      getHeroes: jest.fn(),
+      addHero: jest.fn(),
+      deleteHero: jest.fn(),
+    }
 
     TestBed.configureTestingModule({
       declarations: [
@@ -27,16 +31,19 @@ describe('HeroesComponent (deep test)', () => {
         HeroComponent
       ],
       providers: [
-        { provide: HeroService, useValue: mockHeroService }
+        {
+          provide: HeroService,
+          useValue: mockHeroService
+        }
       ],
-      schemas: [NO_ERRORS_SCHEMA]
+      schemas: [CUSTOM_ELEMENTS_SCHEMA]
     })
 
     fixture = TestBed.createComponent(HeroesComponent);
   });
 
   it('should render each hero as a HeroComponent', () => {
-    mockHeroService.getHeroes.and.returnValue(of(HEROES));
+    mockHeroService.getHeroes.mockReturnValue(of(HEROES));
 
     // run ngOnInit
     fixture.detectChanges();
@@ -48,32 +55,17 @@ describe('HeroesComponent (deep test)', () => {
     }
   });
 
-  // Event Emitter Test Example (Triggering Events on Elements)
-  // it(`should call heroService.deleteHero when the Hero Component's
-  //   delete button is clicked`, () => {
-  //     spyOn(fixture.componentInstance, 'delete');
-  //     mockHeroService.getHeroes.and.returnValue(of(HEROES));
-
-  //     fixture.detectChanges();
-
-  //     const heroComponents = fixture.debugElement.queryAll(By.directive(HeroComponent));
-  //     heroComponents[0].query(By.css('button'))
-  //       .triggerEventHandler('click', {stopPropagation: () => {}});
-
-  //     expect(fixture.componentInstance.delete).toHaveBeenCalledWith(HEROES[0]);
-  //   });
-
-    // Event Emitter Test Example (Emitting Events from Children)
-    it(`should call heroService.deleteHero when the Hero Component's
+  // Event Emitter Test Example (Emitting Events from Children)
+  it(`should call heroService.deleteHero when the Hero Component's
     delete button is clicked`, () => {
-      spyOn(fixture.componentInstance, 'delete');
-      mockHeroService.getHeroes.and.returnValue(of(HEROES));
+    jest.spyOn(fixture.componentInstance, 'delete').mockImplementation(() => {});
+    mockHeroService.getHeroes.mockReturnValue(of(HEROES));
 
-      fixture.detectChanges();
+    fixture.detectChanges();
 
-      const heroComponents = fixture.debugElement.queryAll(By.directive(HeroComponent));
-      (<HeroComponent>heroComponents[0].componentInstance).delete.emit(undefined);
+    const heroComponents = fixture.debugElement.queryAll(By.directive(HeroComponent));
+    (<HeroComponent>heroComponents[0].componentInstance).delete.emit(undefined);
 
-      expect(fixture.componentInstance.delete).toHaveBeenCalledWith(HEROES[0]);
-    });
+    expect(fixture.componentInstance.delete).toHaveBeenCalledWith(HEROES[0]);
+  });
 });

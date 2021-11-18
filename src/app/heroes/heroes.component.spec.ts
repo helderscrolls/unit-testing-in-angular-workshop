@@ -13,11 +13,11 @@ describe('HeroesComponent', () => {
       {id:3, name: 'SuperDude', strength: 55},
     ];
 
-    mockHeroService = jasmine.createSpyObj([
-      'getHeroes',
-      'addHero',
-      'deleteHero',
-    ]);
+    mockHeroService = {
+      getHeroes: jest.fn(),
+      addHero: jest.fn(),
+      deleteHero: jest.fn(),
+    }
 
     component = new HeroesComponent(mockHeroService);
   })
@@ -26,7 +26,7 @@ describe('HeroesComponent', () => {
 
     it('should remove the indicated hero from the heroes list', () => {
       // ARRANGE
-      mockHeroService.deleteHero.and.returnValue(of(true));
+      mockHeroService.deleteHero.mockReturnValue(of(true));
       component.heroes = HEROES;
 
       // ACT
@@ -39,25 +39,12 @@ describe('HeroesComponent', () => {
     })
 
     it('should call deleteHero with the indicated hero', () => {
-      mockHeroService.deleteHero.and.returnValue(of(true));
-      let subSpy = spyOn(mockHeroService.deleteHero(), 'subscribe');
+      mockHeroService.deleteHero.mockReturnValue(of(true));
       component.heroes = HEROES;
 
       component.delete(HEROES[2]);
 
       expect(mockHeroService.deleteHero).toHaveBeenCalledWith(HEROES[2]);
-    })
-
-    it('should call deleteHero with the indicated hero and subscribe to the result', () => {
-      mockHeroService.deleteHero.and.returnValue(of(true));
-      let subSpy = spyOn(mockHeroService.deleteHero(), 'subscribe');
-      component.heroes = HEROES;
-
-      component.delete(HEROES[2]);
-
-      expect(mockHeroService.deleteHero).toHaveBeenCalledWith(HEROES[2]);
-      expect(mockHeroService.deleteHero).toHaveBeenCalledBefore(subSpy);
-      expect(subSpy).toHaveBeenCalled();
     })
   })
 })

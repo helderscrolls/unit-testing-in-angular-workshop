@@ -9,7 +9,9 @@ describe('HeroService', () => {
   let service: HeroService;
 
   beforeEach(() => {
-    mockMessageService = jasmine.createSpyObj(['add']);
+    mockMessageService = {
+      add: jest.fn(),
+    };
 
     TestBed.configureTestingModule({
       imports: [ HttpClientTestingModule ],

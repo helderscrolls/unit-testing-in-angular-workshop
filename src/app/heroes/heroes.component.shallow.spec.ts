@@ -1,4 +1,4 @@
-import { Component, Input, NO_ERRORS_SCHEMA } from "@angular/core";
+import { Component, CUSTOM_ELEMENTS_SCHEMA, Input, NO_ERRORS_SCHEMA } from "@angular/core";
 import { ComponentFixture, TestBed } from "@angular/core/testing"
 import { By } from "@angular/platform-browser";
 import { of } from "rxjs";
@@ -15,9 +15,8 @@ describe('HeroesComponent (shallow test)', () => {
     selector: 'app-hero',
     template: '<div></div>',
   })
-  class FakeHeroComponent {
+  class MockHeroComponent {
     @Input() hero: Hero;
-    // @Output() delete = new EventEmitter();
   }
 
   beforeEach(() => {
@@ -27,30 +26,37 @@ describe('HeroesComponent (shallow test)', () => {
       {id: 3, name: 'SuperDude', strength: 55},
     ];
 
-    mockHeroService = jasmine.createSpyObj(['getHeroes', 'addHero', 'deleteHero']);
+    mockHeroService = {
+      getHeroes: jest.fn(),
+      addHero: jest.fn(),
+      deleteHero: jest.fn(),
+    }
 
     TestBed.configureTestingModule({
       declarations: [
         HeroesComponent,
-        FakeHeroComponent
+        MockHeroComponent,
       ],
       providers: [
-        { provide: HeroService, useValue: mockHeroService }
+        {
+          provide: HeroService,
+          useValue: mockHeroService
+        }
       ],
-      // schemas:[NO_ERRORS_SCHEMA]
+      schemas: [CUSTOM_ELEMENTS_SCHEMA]
     })
     fixture = TestBed.createComponent(HeroesComponent);
   });
 
   it ('should set heroes correctly from the service', () => {
-    mockHeroService.getHeroes.and.returnValue(of(HEROES));
+    mockHeroService.getHeroes.mockReturnValue(of(HEROES));
     fixture.detectChanges();
 
     expect(fixture.componentInstance.heroes.length).toBe(3);
   })
 
   it ('should create one li for each hero', () => {
-    mockHeroService.getHeroes.and.returnValue(of(HEROES));
+    mockHeroService.getHeroes.mockReturnValue(of(HEROES));
     fixture.detectChanges();
 
     expect(fixture.debugElement.queryAll(By.css('li')).length).toBe(3);
